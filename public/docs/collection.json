@@ -773,7 +773,7 @@
                         "url": {
                             "protocol": "http",
                             "host": "servicemario.test\/",
-                            "path": "api\/user\/estimated\/fare_without_auth",
+                            "path": "api\/user\/estimated\/fare-without-auth",
                             "query": []
                         },
                         "method": "GET",

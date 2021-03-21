@@ -105,10 +105,8 @@ class ServiceTypes {
     public function calculateFare($request, $cflag=0) {
 
         try{
-
             $total=$tax_price='';
-            //$location=$this->getLocationDistance($request);
-
+            $location=$this->getLocationDistance($request);
             if (!empty($location['errors'])) {
                 throw new Exception($location['errors']);
             }

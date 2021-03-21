@@ -19,8 +19,8 @@ Route::post('/logout' ,     'ProviderAuth\TokenController@logout');
 Route::post('/verify' ,     'ProviderAuth\TokenController@verify');
 Route::post('/auth/facebook','ProviderAuth\TokenController@facebookViaAPI');
 Route::post('/auth/google',  'ProviderAuth\TokenController@googleViaAPI');
-Route::post('/forgot/password','ProviderAuth\TokenController@forgot_password');
-Route::post('/reset/password', 'ProviderAuth\TokenController@reset_password');
+Route::post('/forgot/password','ProviderAuth\TokenController@forgotPassword');
+Route::post('/reset/password', 'ProviderAuth\TokenController@resetPassword');
 
 Route::get('/refresh/token' , 'ProviderAuth\TokenController@refresh_token');
 Route::post('update-location','ProviderResources\TripController@track_location');

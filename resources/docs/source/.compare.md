@@ -1662,14 +1662,14 @@ fetch(url, {
 
 ```bash
 curl -X GET \
-    -G "http://servicemario.test/api/user/estimated/fare_without_auth" \
+    -G "http://servicemario.test/api/user/estimated/fare-without-auth" \
     -H "Content-Type: application/json" \
     -H "Accept: application/json"
 ```
 
 ```javascript
 const url = new URL(
-    "http://servicemario.test/api/user/estimated/fare_without_auth"
+    "http://servicemario.test/api/user/estimated/fare-without-auth"
 );
 
 let headers = {
@@ -1706,7 +1706,7 @@ fetch(url, {
 ```
 
 ### HTTP Request
-`GET api/user/estimated/fare_without_auth`
+`GET api/user/estimated/fare-without-auth`
 
 
 <!-- END_6cc7af8e9b8dfc925863030403e8d169 -->

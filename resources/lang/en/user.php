@@ -116,7 +116,7 @@ return array (
   'to' => 'To',
   'use_wallet_balance' => 'Use Wallet Balance',
   'available_wallet_balance' => 'Available Wallet Balance',
-  'estimated_fare' => 'Estimated Fare',
+  'estimatedFare' => 'Estimated Fare',
   'charged' => 'CHARGED',
   'payment_method' => 'Payment Methods',
   'promotion' => 'Promotions',

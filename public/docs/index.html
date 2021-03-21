@@ -1242,11 +1242,11 @@ fetch(url, {
 <p>Example request:</p>
 </blockquote>
 <pre><code class="language-bash">curl -X GET \
-    -G "http://servicemario.test/api/user/estimated/fare_without_auth" \
+    -G "http://servicemario.test/api/user/estimated/fare-without-auth" \
     -H "Content-Type: application/json" \
     -H "Accept: application/json"</code></pre>
 <pre><code class="language-javascript">const url = new URL(
-    "http://servicemario.test/api/user/estimated/fare_without_auth"
+    "http://servicemario.test/api/user/estimated/fare-without-auth"
 );
 
 let headers = {
@@ -1278,7 +1278,7 @@ fetch(url, {
     }
 }</code></pre>
 <h3>HTTP Request</h3>
-<p><code>GET api/user/estimated/fare_without_auth</code></p>
+<p><code>GET api/user/estimated/fare-without-auth</code></p>
 <!-- END_6cc7af8e9b8dfc925863030403e8d169 -->
 <!-- START_eb9a2fdc735f3672bfd36a8103af9829 -->
 <h2>Show the application dashboard.</h2>

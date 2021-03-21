@@ -243,7 +243,7 @@ class TokenController extends Controller
 	 *
 	 * @return \Illuminate\Http\Response
 	 */
-	public function forgot_password(Request $request){
+	public function forgotPassword(Request $request){
 
 		$this->validate($request, [
 				'email' => 'required|email|exists:providers,email',
@@ -277,7 +277,7 @@ class TokenController extends Controller
 	 * @return \Illuminate\Http\Response
 	 */
 
-	public function reset_password(Request $request){
+	public function resetPassword(Request $request){
 
 		$this->validate($request, [
 				'password' => 'required|confirmed|min:6',
