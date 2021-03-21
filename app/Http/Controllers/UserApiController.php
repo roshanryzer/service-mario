@@ -1150,7 +1150,6 @@ class UserApiController extends Controller
         try {
             $response = new ServiceTypes();
             $responsedata = $response->calculateFare($request->all(), 1);
-//            $responsedata = 0;
             if (!empty($responsedata['errors'])) {
                 throw new Exception($responsedata['errors']);
             } else {
@@ -1168,9 +1167,7 @@ class UserApiController extends Controller
      */
     public function trip_details(Request $request)
     {
-        $this->validate($request, [
-            'request_id' => 'required|integer|exists:user_requests,id',
-        ]);
+        $this->validate($request, ['request_id' => 'required|integer|exists:user_requests,id']);
         try {
             $UserRequests = UserRequests::UserTripDetails(Auth::user()->id, $request->request_id)->get();
             if (!empty($UserRequests)) {
@@ -1208,7 +1205,7 @@ class UserApiController extends Controller
     public function promocodes()
     {
         try {
-            //$this->check_expiry();
+            $this->check_expiry();
             return PromocodeUsage::Active()
                 ->where('user_id', Auth::user()->id)
                 ->with('promocode')
@@ -1218,30 +1215,31 @@ class UserApiController extends Controller
         }
     }
 
-    /* public function check_expiry(){
-      try{
-      $Promocode = Promocode::all();
-      foreach ($Promocode as $index => $promo) {
-      if(date("Y-m-d") > $promo->expiration){
-      $promo->status = 'EXPIRED';
-      $promo->save();
-      PromocodeUsage::where('promocode_id', $promo->id)->update(['status' => 'EXPIRED']);
-      }else{
-      PromocodeUsage::where('promocode_id', $promo->id)
-      ->where('status','<>','USED')
-      ->update(['status' => 'ADDED']);
+    public function check_expiry()
+    {
+        try {
+            $Promocode = Promocode::all();
+            foreach ($Promocode as $index => $promo) {
+                if (date("Y-m-d") > $promo->expiration) {
+                    $promo->status = 'EXPIRED';
+                    $promo->save();
+                    PromocodeUsage::where('promocode_id', $promo->id)->update(['status' => 'EXPIRED']);
+                } else {
+                    PromocodeUsage::where('promocode_id', $promo->id)
+                        ->where('status', '<>', 'USED')
+                        ->update(['status' => 'ADDED']);
 
-      PromocodePassbook::create([
-      'user_id' => Auth::user()->id,
-      'status' => 'ADDED',
-      'promocode_id' => $promo->id
-      ]);
-      }
-      }
-      } catch (Exception $e) {
-      return response()->json(['error' => trans('api.something_went_wrong')], 500);
-      }
-      } */
+                    PromocodePassbook::create([
+                        'user_id' => Auth::user()->id,
+                        'status' => 'ADDED',
+                        'promocode_id' => $promo->id
+                    ]);
+                }
+            }
+        } catch (Exception $e) {
+            return response()->json(['error' => trans('api.something_went_wrong')], 500);
+        }
+    }
 
     /**
      * add promo code.
