@@ -38,9 +38,9 @@ class DbClearCommand extends Command
      */
     public function handle()
     {
-        if(Setting::get('demo_mode', 0) == 1) {
+        if (Setting::get('demo_mode', 0) == 1) {
             \Log::info('demo data deleting');
-            $uservalues=array('stripe_cust_id'=>NULL,'wallet_balance'=>0,'rating'=>5);
+            $uservalues = array('stripe_cust_id' => NULL, 'wallet_balance' => 0, 'rating' => 5);
             DB::table('users')->where('id', '>', 100)->delete();
             DB::table('users')->update($uservalues);
             DB::table('password_resets')->delete();
@@ -57,7 +57,7 @@ class DbClearCommand extends Command
             DB::table('admins')->where('id', '>', 1)->delete();
             DB::table('admin_wallet')->delete();
             DB::table('agents')->where('id', '>', 1)->delete();
-            $othervalues=array('stripe_cust_id'=>NULL,'wallet_balance'=>0);
+            $othervalues = array('stripe_cust_id' => NULL, 'wallet_balance' => 0);
             DB::table('agents')->update($othervalues);
             DB::table('agent_password_resets')->delete();
             DB::table('agent_cards')->delete();
@@ -77,7 +77,7 @@ class DbClearCommand extends Command
             DB::table('user_request_payments')->delete();
             DB::table('user_request_ratings')->delete();
             DB::table('wallet_requests')->delete();
-        }    
-        
+        }
+
     }
 }

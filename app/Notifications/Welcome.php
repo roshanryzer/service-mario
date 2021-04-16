@@ -24,7 +24,7 @@ class Welcome extends Notification
     /**
      * Get the notification's delivery channels.
      *
-     * @param  mixed  $notifiable
+     * @param mixed $notifiable
      * @return array
      */
     public function via($notifiable)
@@ -35,21 +35,21 @@ class Welcome extends Notification
     /**
      * Get the mail representation of the notification.
      *
-     * @param  mixed  $notifiable
+     * @param mixed $notifiable
      * @return \Illuminate\Notifications\Messages\MailMessage
      */
     public function toMail($notifiable)
     {
         return (new MailMessage)
-                    ->line('A introdução da notificação.')
-                    ->action('Notification Action', 'https://laravel.com')
-                    ->line('Obrigado por usar nosso aplicativo!');
+            ->line('The introduction of the notification.')
+            ->action('Notification Action', url('/'))
+            ->line('Thank you for using  ' . config('app.name'));
     }
 
     /**
      * Get the array representation of the notification.
      *
-     * @param  mixed  $notifiable
+     * @param mixed $notifiable
      * @return array
      */
     public function toArray($notifiable)

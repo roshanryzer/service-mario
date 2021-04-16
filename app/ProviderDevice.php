@@ -32,6 +32,6 @@ class ProviderDevice extends Model
      */
     public function provider()
     {
-        return $this->belongsTo('App\Provider');
+        return $this->belongsTo(Provider::class);
     }
 }

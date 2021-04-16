@@ -15,10 +15,10 @@ class WalletRequests extends Model
     ];
 
     public function provider(){
-    	return $this->belongsTo('App\Provider', 'from_id');
+    	return $this->belongsTo(Provider::class, 'from_id');
     }
 
     public function agent(){
-    	return $this->belongsTo('App\Agent', 'from_id');
+    	return $this->belongsTo(Agent::class, 'from_id');
     }
 }

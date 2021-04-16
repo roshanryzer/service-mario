@@ -933,7 +933,7 @@ class AdminController extends Controller {
                 
                 $rides = UserRequests::with('payment')->orderBy('id', 'desc');
                 $revenue = UserRequestPayment::select(\DB::raw(
-                    'SUM(fixed + distance) as overall, SUM(commision) as commission'
+                    'SUM(fixed + distance) as overall, SUM(commission) as commission'
                 ));
                 $cancel_rides = UserRequests::where('status', 'CANCELLED');
             }

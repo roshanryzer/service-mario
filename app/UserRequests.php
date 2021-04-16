@@ -18,6 +18,7 @@ class UserRequests extends Model
     protected $fillable = [
         'provider_id',
         'user_id',
+        'estimated_fare',
         'current_provider_id',
         'service_type_id',
         'promocode_id',
@@ -79,7 +80,7 @@ class UserRequests extends Model
      */
     public function service_type()
     {
-        return $this->belongsTo('App\ServiceType');
+        return $this->belongsTo(ServiceType::class);
     }
 
     /**
@@ -87,7 +88,7 @@ class UserRequests extends Model
      */
     public function payment()
     {
-        return $this->hasOne('App\UserRequestPayment', 'request_id');
+        return $this->hasOne(UserRequestPayment::class, 'request_id');
     }
 
     /**
@@ -95,7 +96,7 @@ class UserRequests extends Model
      */
     public function rating()
     {
-        return $this->hasOne('App\UserRequestRating', 'request_id');
+        return $this->hasOne(UserRequestRating::class, 'request_id');
     }
 
     /**
@@ -103,7 +104,7 @@ class UserRequests extends Model
      */
     public function filter()
     {
-        return $this->hasMany('App\RequestFilter', 'request_id');
+        return $this->hasMany(RequestFilter::class, 'request_id');
     }
 
     /**
@@ -111,7 +112,7 @@ class UserRequests extends Model
      */
     public function user()
     {
-        return $this->belongsTo('App\User');
+        return $this->belongsTo(User::class);
     }
 
     /**
@@ -119,12 +120,12 @@ class UserRequests extends Model
      */
     public function provider()
     {
-        return $this->belongsTo('App\Provider');
+        return $this->belongsTo(Provider::class);
     }
 
     public function provider_service()
     {
-        return $this->belongsTo('App\ProviderService', 'provider_id', 'provider_id');
+        return $this->belongsTo(ProviderService::class, 'provider_id', 'provider_id');
     }
 
     public function scopePendingRequest($query, $user_id)
@@ -202,13 +203,13 @@ class UserRequests extends Model
                     ->with('filter','service_type');
     }
 
-//    public function getStartedAtAttribute($value)
-//    {
-//        return Carbon::createFromFormat('Y-m-d H:i:s',$value)->format('d/m/Y H:i:s');
-//    }
-//
-//    public function getFinishedAtAttribute($value)
-//    {
-//        return Carbon::createFromFormat('Y-m-d H:i:s',$value)->format('d/m/Y H:i:s');
-//    }
+    public function getStartedAtAttribute($value)
+    {
+        return Carbon::createFromFormat('Y-m-d H:i:s',$value)->format('d/m/Y H:i:s');
+    }
+
+    public function getFinishedAtAttribute($value)
+    {
+        return Carbon::createFromFormat('Y-m-d H:i:s',$value)->format('d/m/Y H:i:s');
+    }
 }

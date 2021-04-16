@@ -46,7 +46,7 @@ class DemoSeeder extends Seeder
             'mobile' => '12312312312',
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
-            'picture' => 'http://lorempixel.com/512/512/business/Moob',
+            'picture' => 'http://lorempixel.com/512/512/business/ServiceMario',
         ]]);
 
         DB::table('providers')->truncate();
@@ -62,7 +62,7 @@ class DemoSeeder extends Seeder
             'longitude' => '-39.7394917',
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
-            'avatar' => 'http://lorempixel.com/512/512/business/Moob',
+            'avatar' => 'http://lorempixel.com/512/512/business/ServiceMario',
         ]]);
 
         DB::table('provider_services')->truncate();

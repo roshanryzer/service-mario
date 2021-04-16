@@ -14,7 +14,7 @@
             <span class="menu-title" data-i18n="{{ $submenuTranslation }}">{{ __('locale.'.$submenu->name) }}</span>
         </a>
         @if (isset($submenu->submenu))
-        @include('admin/panels/submenu', ['menu' => $submenu->submenu])
+        @include('admin-new.panels.submenu', ['menu' => $submenu->submenu])
         @endif
     </li>
     @endforeach

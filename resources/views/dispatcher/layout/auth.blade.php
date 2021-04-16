@@ -10,7 +10,7 @@
     <meta name="author" content="">
 
     <!-- Title -->
-    <title>{{ config('constants.site_title', 'Moob Urban') }}</title>
+    <title>{{ config('constants.site_title', 'Service Mario') }}</title>
     <link rel="shortcut icon" type="image/png" href="{{ config('constants.site_icon') }}"/>
 
     <!-- Vendor CSS -->

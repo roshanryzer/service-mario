@@ -18,7 +18,7 @@ class UserRequestPayment extends Model
         'distance',
         'minute',
         'hour',
-        'commision','commision_per','agent','agent_per',
+        'commission','commission_per','agent','agent_per',
         'discount','discount_per',
         'tax','tax_per',
         'total',
@@ -43,7 +43,7 @@ class UserRequestPayment extends Model
      */
     public function request()
     {
-        return $this->belongsTo('App\UserRequests');
+        return $this->belongsTo(UserRequests::class);
     }
 
     /**
@@ -51,7 +51,7 @@ class UserRequestPayment extends Model
      */
     public function provider()
     {
-        return $this->belongsTo('App\Provider');
+        return $this->belongsTo(Provider::class);
     }
 
     public function agent()

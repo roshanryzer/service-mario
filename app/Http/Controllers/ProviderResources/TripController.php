@@ -1281,10 +1281,10 @@ class TripController extends Controller
 
 
             //changed by tamil
-            $Commision = ($Total) * ($commission_percentage / 100);
+            $commission = ($Total) * ($commission_percentage / 100);
 
             $ProviderCommission = 0;
-            $ProviderPay = (($Total + $Discount) - $Commision) - $Tax;
+            $ProviderPay = (($Total + $Discount) - $commission) - $Tax;
 
             $Payment = new UserRequestPayment;
             $Payment->request_id = $UserRequest->id;
@@ -1360,8 +1360,8 @@ class TripController extends Controller
             $Payment->distance = $Distance_fare;
             $Payment->minute = $Minute_fare;
             $Payment->hour = $Hour_fare;
-            $Payment->commision = $Commision;
-            $Payment->commision_per = $commission_percentage;
+            $Payment->commission = $commission;
+            $Payment->commission_per = $commission_percentage;
             $Payment->surge = $Surge;
             $Payment->toll_charge = $toll_price;
             $Payment->total = $Total;
@@ -1667,8 +1667,8 @@ class TripController extends Controller
 
 
             //admin,provider calculations
-            if (!empty($paymentsRequest->commision_per)) {
-                $admin_commision = $paymentsRequest->commision;
+            if (!empty($paymentsRequest->commission_per)) {
+                $admin_commission = $paymentsRequest->commission;
                 //check the user applied discount
                 if (!empty($paymentsRequest->discount)) {
                     $balance_provider_credit = $paymentsRequest->discount;
@@ -1679,9 +1679,9 @@ class TripController extends Controller
                 }
             }
 
-            if (!empty($admin_commision)) {
+            if (!empty($admin_commission)) {
                 //add the commission amount to admin wallet and debit amount to provider wallet, update the provider wallet amount to provider table
-                $this->adminCommission($admin_commision, $paymentsRequest, $UserRequest);
+                $this->adminCommission($admin_commission, $paymentsRequest, $UserRequest);
             }
 
             if (!empty($balance_provider_credit)) {
@@ -1695,12 +1695,12 @@ class TripController extends Controller
             }
 
             if (!empty($paymentsRequest->peak_comm_amount)) {
-                //add the peak amount commision to admin wallet
+                //add the peak amount commission to admin wallet
                 $this->peakAmount($paymentsRequest->peak_comm_amount, $paymentsRequest, $UserRequest);
             }
 
             if (!empty($paymentsRequest->waiting_comm_amount)) {
-                //add the waiting amount commision to admin wallet
+                //add the waiting amount commission to admin wallet
                 $this->waitingAmount($paymentsRequest->waiting_comm_amount, $paymentsRequest, $UserRequest);
             }
 
@@ -1709,9 +1709,9 @@ class TripController extends Controller
                 //check whether provider have any negative wallet balance if its deduct the amount from its credit.
                 //if its negative wallet balance grater of its credit amount then deduct credit-wallet balance and update the negative amount to admin wallet
                 if ($provider->wallet_balance > 0) {
-                    $admin_amount = $credit_amount - ($admin_commision + $paymentsRequest->tax);
+                    $admin_amount = $credit_amount - ($admin_commission + $paymentsRequest->tax);
                 } else {
-                    $admin_amount = $credit_amount - ($admin_commision + $paymentsRequest->tax) + ($provider->wallet_balance);
+                    $admin_amount = $credit_amount - ($admin_commission + $paymentsRequest->tax) + ($provider->wallet_balance);
                 }
 
                 $this->providerRideCredit($credit_amount, $admin_amount, $paymentsRequest, $UserRequest);

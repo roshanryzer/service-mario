@@ -1,21 +1,67 @@
-@foreach ($menus = dashboard_menu()->getAll() as $menu)
-    <li class="nav-item @if ($menu->active) active @endif" id="{{ $menu->id }}">
-        <a href="{{ $menu->url }}" class="nav-link nav-toggle">
-            <i class="{{ $menu->icon }}"></i>
-            <span class="title">{{ $menu->name }} {!! apply_filters(BASE_FILTER_APPEND_MENU_NAME, null, $menu->id) !!}</span>
-            @if (isset($menu->children) && $menu->children->count()) <span class="arrow @if ($menu->active) open @endif"></span> @endif
-        </a>
-        @if (isset($menu->children) && $menu->children->count())
-            <ul class="sub-menu @if (!$menu->active) hidden-ul @endif">
-                @foreach ($menu->children as $item)
-                    <li class="nav-item @if ($item->active) active @endif" id="{{ $item->id }}">
-                        <a href="{{ $item->url }}" class="nav-link">
-                            <i class="{{ $item->icon }}"></i>
-                            {{ $item->name }}
-                        </a>
-                    </li>
+@php
+    $configData = Helper::applClasses();
+@endphp
+<div
+        class="main-menu menu-fixed {{($configData['theme'] === 'light') ? "menu-light" : "menu-dark"}} menu-accordion menu-shadow"
+        data-scroll-to-active="true">
+    <div class="navbar-header">
+        <ul class="nav navbar-nav flex-row">
+            <li class="nav-item mr-auto">
+                <a class="navbar-brand" href="dashboard-analytics">
+                    <div class="brand-logo"></div>
+                    <h2 class="brand-text mb-0">Vuexy</h2>
+                </a>
+            </li>
+            <li class="nav-item nav-toggle">
+                <a class="nav-link modern-nav-toggle pr-0" data-toggle="collapse">
+                    <i class="feather icon-x d-block d-xl-none font-medium-4 primary toggle-icon"></i>
+                    <i class="toggle-icon feather icon-disc font-medium-4 d-none d-xl-block primary collapse-toggle-icon"
+                       data-ticon="icon-disc">
+                    </i>
+                </a>
+            </li>
+        </ul>
+    </div>
+    <div class="shadow-bottom"></div>
+    <div class="main-menu-content">
+        <ul class="navigation navigation-main" id="main-menu-navigation" data-menu="menu-navigation">
+            {{-- Foreach menu item starts --}}
+            @if(isset($menuData[0]))
+                @foreach($menuData[0]->menu as $menu)
+                    @if(isset($menu->navheader))
+                        <li class="navigation-header">
+                            <span>{{ $menu->navheader }}</span>
+                        </li>
+                    @else
+                        {{-- Add Custom Class with nav-item --}}
+                        @php
+                            $custom_classes = "";
+                            if(isset($menu->classlist)) {
+                            $custom_classes = $menu->classlist;
+                            }
+                            $translation = "";
+                            if(isset($menu->i18n)){
+                            $translation = $menu->i18n;
+                            }
+                        @endphp
+                        <li class="nav-item {{ (request()->is($menu->url)) ? 'active' : '' }} {{ $custom_classes }}">
+                            <a href="{{ $menu->url }}">
+                                <i class="{{ $menu->icon }}"></i>
+                                <span class="menu-title" data-i18n="{{ $translation }}">{{ __('locale.'.$menu->name) }}</span>
+                                @if (isset($menu->badge))
+                                    <?php $badgeClasses = "badge badge-pill badge-primary float-right" ?>
+                                    <span
+                                            class="{{ isset($menu->badgeClass) ? $menu->badgeClass.' test' : $badgeClasses.' notTest' }} ">{{$menu->badge}}</span>
+                                @endif
+                            </a>
+                            @if(isset($menu->submenu))
+                                @incPalude('admin-new.panels.submenu', ['menu' => $menu->submenu])
+                            @endif
+                        </li>
+                    @endif
                 @endforeach
-            </ul>
-        @endif
-    </li>
-@endforeach
+            @endif
+            {{-- Foreach menu item ends --}}
+        </ul>
+    </div>
+</div>

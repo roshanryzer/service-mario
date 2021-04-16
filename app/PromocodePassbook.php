@@ -30,6 +30,6 @@ class PromocodePassbook extends Model
      */
     public function promocode()
     {
-        return $this->belongsTo('App\Promocode')->withTrashed();
+        return $this->belongsTo(Promocode::class)->withTrashed();
     }
 }

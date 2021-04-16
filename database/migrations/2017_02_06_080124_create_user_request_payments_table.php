@@ -27,8 +27,8 @@ class CreateUserRequestPaymentsTable extends Migration
             $table->float('time_price', 10, 2)->default(0);
             $table->float('minute',10,2)->default(0);
             $table->float('hour',10,2)->default(0);
-            $table->float('commision',  10, 2)->default(0);
-            $table->float('commision_per',  5, 2)->default(0);
+            $table->float('commission',  10, 2)->default(0);
+            $table->float('commission_per',  5, 2)->default(0);
             $table->float('agent',  10, 2)->default(0);
             $table->float('agent_per',  5, 2)->default(0);
             $table->float('discount',   10, 2)->default(0);

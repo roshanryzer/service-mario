@@ -10,7 +10,7 @@
             <div class="column log-left">
                 <span class="login-logo"><img src="{{ config('constants.site_logo', asset('logo-black.png'))}}"></span>
                 <h2>Crie sua conta e mova-se em minutos</h2>
-                <p>Bem-vindo(a) ao {{ config('constants.site_title', 'Moob Urban')  }}, a maneira mais fácil de se locomover com o toque de um botão.</p>
+                <p>Bem-vindo(a) ao {{ config('constants.site_title', 'Service Mario')  }}, a maneira mais fácil de se locomover com o toque de um botão.</p>
             </div>
             <div class="column log-right">
                 <div class="login-box-outer">

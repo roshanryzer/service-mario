@@ -35,6 +35,6 @@ class ProviderWallet extends Model
 
     public function transactions()
     {
-        return $this->hasMany('App\ProviderWallet', 'transaction_alias','transaction_alias');
+        return $this->hasMany(ProviderWallet::class, 'transaction_alias','transaction_alias');
     }
 }

@@ -169,6 +169,7 @@ return [
 
         Spatie\Permission\PermissionServiceProvider::class,
 
+        App\Providers\MenuServiceProvider::class,
 
         //Paypal
         Srmklive\PayPal\Providers\PayPalServiceProvider::class,
@@ -241,5 +242,7 @@ return [
         
         //Paytm
         'PaytmWallet' => Anand\LaravelPaytmWallet\Facades\PaytmWallet::class,
+
+        'Helper' => App\Helper\Helper::class,
     ],
 ];

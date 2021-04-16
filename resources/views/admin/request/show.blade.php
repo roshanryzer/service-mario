@@ -73,7 +73,7 @@
                             <li >@lang('admin.request.distance_price')</li>
                             <li >{{ currency($request->payment->distance) }}</li>
                         @endif
-                        <li >@lang('admin.request.commission') : {{ currency($request->payment->commision) }}</li>
+                        <li >@lang('admin.request.commission') : {{ currency($request->payment->commission) }}</li>
                         <li >@lang('admin.request.fleet_commission') : {{ currency($request->payment->fleet) }}</li>
                         <li >@lang('admin.request.discount_price') : {{ currency($request->payment->discount) }}</li>
                         <li >@lang('admin.request.peak_amount') : {{ currency($request->payment->peak_amount) }}</li>

@@ -19,4 +19,4 @@ if (! empty($outroLines)) {
 }
 
 echo 'Atenciosamente,', "\n";
-echo config('constants.site_title', 'Moob'), "\n";
+echo config('constants.site_title', 'ServiceMario'), "\n";

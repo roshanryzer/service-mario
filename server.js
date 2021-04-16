@@ -1,7 +1,7 @@
 var app = require('express')(); 
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
-var debug = require('debug')('Moob:Chat');
+var debug = require('debug')('ServiceMario:Chat');
 var request = require('request');
 var port = process.env.PORT || '3000';
 

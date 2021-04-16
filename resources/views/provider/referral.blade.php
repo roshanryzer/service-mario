@@ -69,7 +69,7 @@
                                 <div class="form-row clearfix">
                                     <div class="field column">
                                         <label for="exampleInputEmail1"></label>
-                                        <a id="invite" href="mailto:testmail?subject=Conheça o {{config('constants.site_title','Moob Urban')}}&body=Hi,%0A%0A I found this website and thought you might like it. Use my referral code({{\Auth::guard('provider')->user()->referral_unique_id}}) on registering in the application.%0A%0AWebsite: {{url('/')}}/provider/login %0AReferral Code: {{\Auth::guard('provider')->user()->referral_unique_id}}" class="button is-invite">Invite</a> 
+                                        <a id="invite" href="mailto:testmail?subject=Conheça o {{config('constants.site_title','Service Mario')}}&body=Hi,%0A%0A I found this website and thought you might like it. Use my referral code({{\Auth::guard('provider')->user()->referral_unique_id}}) on registering in the application.%0A%0AWebsite: {{url('/')}}/provider/login %0AReferral Code: {{\Auth::guard('provider')->user()->referral_unique_id}}" class="button is-invite">Invite</a>
                                     </div>
                                 </div>
                             </form>

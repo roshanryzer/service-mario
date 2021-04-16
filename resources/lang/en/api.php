@@ -39,7 +39,7 @@ return array (
 	'ride' => [
 
 		'request_inprogress' => 'Request in progress',
-		'no_providers_found' => 'Provider not avalable',
+		'no_providers_found' => 'Provider not available',
 		'request_cancelled' => 'Canceled co-funding request',
 		'already_cancelled' => 'The trip has already been canceled',
 		'ride_cancelled' => 'Request canceled',

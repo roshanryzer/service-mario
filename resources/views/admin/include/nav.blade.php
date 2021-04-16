@@ -7,6 +7,8 @@
         }
     </style>
 @endsection
+
+{{--@include('admin-new.layouts.base.layouts.partials.sidebar')--}}
 <div>
     <div class="menu-container px-1 has-background-white">
         <div class="menu-wrapper py-1">
@@ -515,10 +517,4 @@
             </aside>
         </div>
     </div>
-</div>
-
-
-</ul>
-</div>
-</div>
 </div>

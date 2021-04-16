@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>{{config('constants.site_title','Moob')}} - Trip</title>
+    <title>{{config('constants.site_title','ServiceMario')}} - Trip</title>
     <link rel="shortcut icon" type="image/png" href="{{ config('constants.site_icon') }}"/>
 
     <link href="{{asset('asset/css/bootstrap.min.css')}}" rel="stylesheet">

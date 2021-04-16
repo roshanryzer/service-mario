@@ -29,7 +29,7 @@ class PeakHour extends Model
         
     public function servicetimes()
     {
-        return $this->hasOne('App\ServicePeakHour', 'peak_hours_id')->select(array('min_price', 'peak_hours_id'));
+        return $this->hasOne(ServicePeakHour::class, 'peak_hours_id')->select(array('min_price', 'peak_hours_id'));
     }    
 
 }

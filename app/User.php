@@ -48,7 +48,7 @@ class User extends Authenticatable implements JWTSubject
      */
     public function trips()
     {
-        return $this->hasMany('App\UserRequests','user_id','id');
+        return $this->hasMany(UserRequests::class,'user_id','id');
     }
 
     public function city()

@@ -9,7 +9,7 @@
     <meta name="author" content="">
 
     <!-- Title -->
-    <title>@yield('title'){{ config('constants.site_title', 'Moob Urban') }} - Dispatcher Panel</title>
+    <title>@yield('title'){{ config('constants.site_title', 'Service Mario') }} - Dispatcher Panel</title>
 
     <link rel="shortcut icon" type="image/png" href="{{ config('constants.site_icon') }}">
 

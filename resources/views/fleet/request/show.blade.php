@@ -92,7 +92,7 @@
                                     <dd class="column">{{ currency($request->payment->distance) }}</dd>
                                 @endif
                                 <dt class="column">@lang('admin.request.commission') :</dt>
-                                <dd class="column">{{ currency($request->payment->commision) }}</dd>
+                                <dd class="column">{{ currency($request->payment->commission) }}</dd>
 
                                 <dt class="column">@lang('admin.request.fleet_commission') :</dt>
                                 <dd class="column">{{ currency($request->payment->fleet) }}</dd>

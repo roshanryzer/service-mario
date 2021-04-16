@@ -35,7 +35,7 @@ class UserRequestRating extends Model
      */
     public function user()
     {
-        return $this->belongsTo('App\User');
+        return $this->belongsTo(User::class);
     }
 
     /**
@@ -43,6 +43,6 @@ class UserRequestRating extends Model
      */
     public function provider()
     {
-        return $this->belongsTo('App\Provider');
+        return $this->belongsTo(Provider::class);
     }
 }

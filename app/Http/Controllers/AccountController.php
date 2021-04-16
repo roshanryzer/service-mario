@@ -181,28 +181,28 @@ class AccountController extends Controller
             $rides = UserRequests::with('payment')->orderBy('id','desc');
             $cancel_rides = UserRequests::where('status','CANCELLED');
             $revenue = UserRequestPayment::select(\DB::raw(
-                           'SUM(fixed + distance) as overall, SUM(commision) as commission' 
+                           'SUM(fixed + distance) as overall, SUM(commission) as commission'
                        ));
 
-            if($type == 'today'){
+            if($type === 'today'){
 
                 $rides->where('created_at', '>=', Carbon::today());
                 $cancel_rides->where('created_at', '>=', Carbon::today());
                 $revenue->where('created_at', '>=', Carbon::today());
 
-            }elseif($type == 'monthly'){
+            }elseif($type === 'monthly'){
 
                 $rides->where('created_at', '>=', Carbon::now()->month);
                 $cancel_rides->where('created_at', '>=', Carbon::now()->month);
                 $revenue->where('created_at', '>=', Carbon::now()->month);
 
-            }elseif($type == 'yearly'){
+            }elseif($type === 'yearly'){
 
                 $rides->where('created_at', '>=', Carbon::now()->year);
                 $cancel_rides->where('created_at', '>=', Carbon::now()->year);
                 $revenue->where('created_at', '>=', Carbon::now()->year);
 
-            }elseif ($type == 'range') {
+            }elseif ($type === 'range') {
 
                 if($request->from_date == $request->to_date) {
                     $rides->whereDate('created_at', date('Y-m-d', strtotime($request->from_date)));
@@ -218,7 +218,7 @@ class AccountController extends Controller
             
             $rides = $rides->paginate($this->perpage);
             
-            if ($type == 'range'){
+            if ($type === 'range'){
                 $path='range?from_date='.$request->from_date.'&to_date='.$request->to_date;
                 $rides->setPath($path);
             } 
@@ -317,7 +317,7 @@ class AccountController extends Controller
 
                 $Providers[$index]->payment = UserRequestPayment::whereIn('request_id', $Rides)
                                 ->select(\DB::raw(
-                                   'SUM(fixed + distance) as overall, SUM(commision) as commission' 
+                                   'SUM(fixed + distance) as overall, SUM(commission) as commission'
                                 ))->get();
             }
 

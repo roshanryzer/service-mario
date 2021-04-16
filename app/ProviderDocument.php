@@ -33,13 +33,13 @@ class ProviderDocument extends Model
      */
     public function provider()
     {
-        return $this->belongsTo('App\Provider');
+        return $this->belongsTo(Provider::class);
     }
     /**
      * The services that belong to the user.
      */
     public function document()
     {
-        return $this->belongsTo('App\Document');
+        return $this->belongsTo(Document::class);
     }
 }

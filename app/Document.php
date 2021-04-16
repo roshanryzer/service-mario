@@ -49,6 +49,6 @@ class Document extends Model
 
     public function providerdocuments()
     {
-        return $this->hasOne('App\ProviderDocument', 'document_id')->select(array('url', 'status', 'document_id'));
+        return $this->hasOne(ProviderDocument::class, 'document_id')->select(array('url', 'status', 'document_id'));
     }
 }

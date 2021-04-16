@@ -29,7 +29,7 @@ class Promocode extends Model
 
      public function promousage()
     {
-        return $this->hasMany('App\PromocodeUsage', 'promocode_id');
+        return $this->hasMany(PromocodeUsage::class, 'promocode_id');
     }
 
     public function agent()

@@ -15,7 +15,7 @@
                         </div>
                         <div class="right">
                             <a href="{{url('login')}}">
-                                <h3>Vá de {{config('constants.site_title','Moob')}}</h3>
+                                <h3>Vá de {{config('constants.site_title','ServiceMario')}}</h3>
                                 <h5>CADASTRE-SE <i class="fa fa-chevron-right"></i></h5>
                             </a>
                         </div>
@@ -47,7 +47,7 @@
                 <div class="icon"><img src="{{asset('asset/img/taxi-app.png')}}"></div>
                 <h2>Solicite uma viagem</h2>
                 <div class="title-divider"></div>
-                <p>{{ config('constants.site_title', 'Moob')  }} é a maneira mais inteligente de se locomover. Um toque e um carro ou moto vai até você. Seu @lang('admin.provider') sabe exatamente para onde ir. E você pode pagar com dinheiro ou cartão.</p>
+                <p>{{ config('constants.site_title', 'ServiceMario')  }} é a maneira mais inteligente de se locomover. Um toque e um carro ou moto vai até você. Seu @lang('admin.provider') sabe exatamente para onde ir. E você pode pagar com dinheiro ou cartão.</p>
             </div>
         </div>
 
@@ -56,7 +56,7 @@
                  <div class="icon"><img src="{{asset('asset/img/destination.png')}}"></div>
                 <h2>Escolha como pagar</h2>
                 <div class="title-divider"></div>
-                <p>Quando chegar ao seu destino, pague com dinheiro ou solicite sua viagem com cartão ou saldo da carteira. Com o {{ config('constants.site_title', 'Moob') }}, a escolha é sua.</p>
+                <p>Quando chegar ao seu destino, pague com dinheiro ou solicite sua viagem com cartão ou saldo da carteira. Com o {{ config('constants.site_title', 'ServiceMario') }}, a escolha é sua.</p>
             </div>
         </div>
 
@@ -178,7 +178,7 @@
             <div class="column content-block">
                 <h2>Safety Putting people first</h2>
                 <div class="title-divider"></div>
-                <p>Whether riding in the backseat or driving up front, every part of the {{ config('constants.site_title', 'Moob Urban') }} experience has been designed around your safety and security.</p>
+                <p>Whether riding in the backseat or driving up front, every part of the {{ config('constants.site_title', 'Service Mario') }} experience has been designed around your safety and security.</p>
                 <a class="content-more" href="#">HOW WE KEEP YOU SAFE <i class="fa fa-chevron-right"></i></a>
             </div>
             <div class="column img-block text-center"> 
@@ -192,7 +192,7 @@
               <div class="icon"><img src="{{ asset('asset/img/seat-belt.png') }}"></div>
             <h2>Segurança em primeiro lugar</h2>
             <div class="title-divider"></div>
-            <p>Seja andando no banco de trás ou dirigindo na frente, todo o sistema do {{ config('constants.site_title', 'Moob') }} foi desenvovido para dar a melhor experiencia de viagem com total qualidade e segurança.</p>
+            <p>Seja andando no banco de trás ou dirigindo na frente, todo o sistema do {{ config('constants.site_title', 'ServiceMario') }} foi desenvovido para dar a melhor experiencia de viagem com total qualidade e segurança.</p>
             <a class="content-more more-btn" href="{{url('login')}}">VÁ COM SEGURANÇA, CADASTRE-SE <i class="fa fa-chevron-right"></i></a>
         </div>
         <!-- <div class="column img-box text-center"> 
@@ -206,7 +206,7 @@
 
 <!--<div class="row find-city">
     <div class="container pad-60 content-block center">
-        <h2>{{ config('constants.site_title','Moob') }} na sua cidade</h2>
+        <h2>{{ config('constants.site_title','ServiceMario') }} na sua cidade</h2>
         <div class="columns">
             <div class="column">
         <form>
@@ -225,7 +225,7 @@
 </div>-->
     <!-- <div class="row find-city no-margin">
         <div class="container">
-            <h2>{{config('constants.site_title','Moob Urban')}} is in your city</h2>
+            <h2>{{config('constants.site_title','Service Mario')}} is in your city</h2>
             <form>
                 <div class="input-group find-form">
                     <input type="text" class="input"  placeholder="Search" >

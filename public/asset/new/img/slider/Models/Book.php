@@ -23,7 +23,7 @@ class Book extends BaseModel {
 
         // When a book is updated
         static::updated(function($book) {
-            return dd($book);
+           // return dd($book);
             event(new BookWasUpdated($book));
         });
 

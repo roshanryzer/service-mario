@@ -196,7 +196,7 @@ class AgentController extends Controller
                 $revenue = UserRequestPayment::whereHas('provider', function ($query) {
                     $query->where('agent', Auth::user()->id);
                 })->select(\DB::raw(
-                    'SUM(ROUND(fixed) + ROUND(distance)) as overall, SUM(ROUND(commision)) as commission'
+                    'SUM(ROUND(fixed) + ROUND(distance)) as overall, SUM(ROUND(commission)) as commission'
                 ));
             }
 

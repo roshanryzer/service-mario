@@ -25,7 +25,7 @@ if(Auth::user()->status=='card'){
     <link rel="shortcut icon" href="{{ config('constants.site_icon') }}" type="image/x-icon">
     <link rel="icon" href="{{ config('constants.site_icon') }}" type="image/x-icon">
 
-    <title>@yield('title'){{ config('constants.site_title', 'Moob Urban') }}</title>
+    <title>@yield('title'){{ config('constants.site_title', 'Service Mario') }}</title>
     <link rel="shortcut icon" type="image/png" href="{{ config('constants.site_icon') }}"/>
     
 

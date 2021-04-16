@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CheckOTPRequest;
 use App\Services\LocationService;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -188,14 +189,14 @@ class UserApiController extends Controller
 
         //User Already Exists
         if ($email_case != null) {
-            return response()->json(['Email is already registered!'], 422);
+            return response()->json(['error' => 'Email is already registered!'], 422);
         }
         if ($registeredEmail != null && $registeredMobile != null) {
             //User Already Registerd with same credentials
             if ($registeredEmail != null)
-                return response()->json(['User already registered with this email!'], 422);
+                return response()->json(['error' => 'User already registered with this email!'], 422);
             else if ($registeredMobile != null)
-                return response()->json(['User already registered by this phone number!'], 422);
+                return response()->json(['error' => 'User already registered by this phone number!'], 422);
         } else {
             if ($registeredEmail != null)
                 $currentUser = $registeredEmail;
@@ -204,9 +205,9 @@ class UserApiController extends Controller
         }
 
         if ($registeredEmailNormal != null)
-            return response()->json(['User already registered with a given email!'], 422);
+            return response()->json(['error' => 'User already registered with a given email!'], 422);
         else if ($registeredMobileNormal != null)
-            return response()->json(['User already registered with a given mobile number!'], 422);
+            return response()->json(['error' => 'User already registered with a given mobile number!'], 422);
 
         $file = QrCode::format('png')->size(500)->margin(10)->generate('{
                 "country_code":' . '"' . $request->country_code . '"' . ',
@@ -274,6 +275,9 @@ class UserApiController extends Controller
     public function logout(Request $request)
     {
         try {
+            $token = $request->user()->token();
+            $token->revoke();
+
             User::where('id', $request->id)->update(['device_id' => '', 'device_token' => '']);
             return response()->json(['message' => trans('api.logout_success')]);
         } catch (Exception $e) {
@@ -538,10 +542,10 @@ class UserApiController extends Controller
         $serviceList = ServiceType::where('status', '=', '1')->where('parent_id', '=', '0')->with('childrenRecursive')->get();
         $ActiveProviders = ProviderService::where('status', 'active')
             ->get()->pluck('provider_id');
-        $Providers = Provider::with('service')->whereIn('id', $ActiveProviders)
+        $providers = Provider::with('service')->whereIn('id', $ActiveProviders)
             ->where('status', 'approved')
             ->get();
-        if ($serviceList->count() != null && $Providers->count() != null) {
+        if ($serviceList->count() != null && $providers->count() != null) {
             return $serviceList;
         } else {
 
@@ -550,12 +554,12 @@ class UserApiController extends Controller
                 $distance = config('constants.provider_search_radius', '10');
                 $ActiveProviders = ProviderService::where('status', 'active')
                     ->get()->pluck('provider_id');
-                $Providers = Provider::with('service')->whereIn('id', $ActiveProviders)
+                $providers = Provider::with('service')->whereIn('id', $ActiveProviders)
                     ->where('status', 'approved')
                     ->whereRaw("round((6371 * acos( cos( radians(" . Auth()->user()->latitude . ") ) * cos( radians(latitude) ) * cos( radians(longitude) - radians(" . Auth()->user()->longitude . ") ) + sin( radians(" . Auth()->user()->latitude . ") ) * sin( radians(latitude) ) ) ),3) <= $distance")
                     ->get();
-                if ($Providers->count() != null) {
-                    foreach ($Providers as $Provider) {
+                if ($providers->count() != null) {
+                    foreach ($providers as $provider) {
                         $serviceList = ServiceType::where('status', '=', '1')->where('parent_id', '=', '0')->with('childrenRecursive')->get();
                     }
                     return $serviceList;
@@ -587,9 +591,8 @@ class UserApiController extends Controller
                 //'distance' => 'required|numeric',
                 'use_wallet' => 'numeric',
 
-                //TODO ALL - Alterações Debit na máquina e voucher
+                //TODO ALL -Debit changes on the machine and voucher
                 'payment_mode' => 'required|in:BRAINTREE,CASH,DEBIT_MACHINE,CARD,PAYPAL,PAYPAL-ADAPTIVE,PAYUMONEY,PAYTM',
-
                 'card_id' => ['required_if:payment_mode,CARD', 'exists:cards,card_id,user_id,' . Auth::user()->id],
             ]);
         } else {
@@ -633,7 +636,7 @@ class UserApiController extends Controller
         $latitude = $request->s_latitude;
         $longitude = $request->s_longitude;
         $service_type = $request->service_type;
-        $Providers = Provider::with('service')
+        $providers = Provider::with('service')
             ->select(DB::Raw("round((6371 * acos( cos( radians('$latitude') ) * cos( radians(latitude) ) * cos( radians(longitude) - radians('$longitude') ) + sin( radians('$latitude') ) * sin( radians(latitude) ) ) ),3) AS distance"), 'id')
             ->where('status', 'approved')
             ->whereRaw("round((6371 * acos( cos( radians('$latitude') ) * cos( radians(latitude) ) * cos( radians(longitude) - radians('$longitude') ) + sin( radians('$latitude') ) * sin( radians(latitude) ) ) ),3) <= $distance")
@@ -643,10 +646,10 @@ class UserApiController extends Controller
             })
             ->orderBy('distance', 'asc')
             ->get();
-        // dd($Providers);
-        //Log::info($Providers);
+        // dd($providers);
+        //Log::info($providers);
         // List Providers who are currently busy and add them to the filter list.
-        if (count($Providers) == 0) {
+        if (count($providers) == 0) {
             if ($request->ajax()) {
                 // Push Notification to User
                 return response()->json(['error' => trans('api.ride.no_providers_found')], 422);
@@ -666,7 +669,7 @@ class UserApiController extends Controller
             }
             $UserRequest->user_id = Auth::user()->id;
             if ((config('constants.manual_request', 0) == 0) && (config('constants.broadcast_request', 0) == 0)) {
-                $UserRequest->current_provider_id = $Providers[0]->id;
+                $UserRequest->current_provider_id = $providers[0]->id;
             } else {
                 $UserRequest->current_provider_id = 0;
             }
@@ -705,7 +708,7 @@ class UserApiController extends Controller
             $UserRequest->otp = mt_rand(1000, 9999);
             $UserRequest->assigned_at = Carbon::now();
             $UserRequest->route_key = $route_key;
-            if ($Providers->count() <= config('constants.surge_trigger') && $Providers->count() > 0) {
+            if ($providers->count() <= config('constants.surge_trigger') && $providers->count() > 0) {
                 $UserRequest->surge = 1;
             }
             if ($request->has('schedule_date') && $request->has('schedule_time')) {
@@ -716,7 +719,7 @@ class UserApiController extends Controller
             if ($UserRequest->status != 'SCHEDULED') {
                 if ((config('constants.manual_request', 0) == 0) && (config('constants.broadcast_request', 0) == 0)) {
                     Log::info('New Request id : ' . $UserRequest->id . ' Assigned to provider : ' . $UserRequest->current_provider_id);
-                    (new SendPushNotification)->IncomingRequest($Providers[0]->id);
+                    (new SendPushNotification)->IncomingRequest($providers[0]->id);
                 }
             }
             $UserRequest->save();
@@ -735,15 +738,15 @@ class UserApiController extends Controller
             }
             if ($UserRequest->status != 'SCHEDULED') {
                 if (config('constants.manual_request', 0) == 0) {
-                    foreach ($Providers as $key => $Provider) {
+                    foreach ($providers as $key => $provider) {
                         if (config('constants.broadcast_request', 0) == 1) {
-                            (new SendPushNotification)->IncomingRequest($Provider->id);
+                            (new SendPushNotification)->IncomingRequest($provider->id);
                         }
                         $Filter = new RequestFilter;
                         // Send push notifications to the first provider
                         // incoming request push to provider
                         $Filter->request_id = $UserRequest->id;
-                        $Filter->provider_id = $Provider->id;
+                        $Filter->provider_id = $provider->id;
                         $Filter->save();
                     }
                 }
@@ -927,7 +930,7 @@ class UserApiController extends Controller
             $Timeout = config('constants.provider_select_timeout', 180);
             $type = config('constants.broadcast_request', 0);
             if (!empty($UserRequestsFilter)) {
-                for ($i = 0; $i < sizeof($UserRequestsFilter); $i++) {
+                for ($i = 0; $i < count($UserRequestsFilter); $i++) {
                     if ($type == 1) {
                         $ExpiredTime = $Timeout - (time() - strtotime($UserRequestsFilter[$i]->created_at));
                         if ($UserRequestsFilter[$i]->status == 'SEARCHING' && $ExpiredTime < 0) {
@@ -940,8 +943,8 @@ class UserApiController extends Controller
                     } else {
                         $ExpiredTime = $Timeout - (time() - strtotime($UserRequestsFilter[$i]->assigned_at));
                         if ($UserRequestsFilter[$i]->status == 'SEARCHING' && $ExpiredTime < 0) {
-                            $Providertrip = new TripController();
-                            $Providertrip->assign_next_provider($UserRequestsFilter[$i]->id);
+                            $providertrip = new TripController();
+                            $providertrip->assign_next_provider($UserRequestsFilter[$i]->id);
                         } else if ($UserRequestsFilter[$i]->status == 'SEARCHING' && $ExpiredTime > 0) {
                             break;
                         }
@@ -1349,6 +1352,7 @@ class UserApiController extends Controller
     public function upcoming_trips()
     {
         try {
+
             $UserRequests = UserRequests::UserUpcomingTrips(Auth::user()->id)->get();
             if (!empty($UserRequests)) {
                 $map_icon = asset('asset/img/marker-start.png');
@@ -1427,19 +1431,19 @@ class UserApiController extends Controller
             if ($request->has('service')) {
                 $ActiveProviders = ProviderService::AvailableServiceProvider($request->service)
                     ->get()->pluck('provider_id');
-                $Providers = Provider::with('service')->whereIn('id', $ActiveProviders)
+                $providers = Provider::with('service')->whereIn('id', $ActiveProviders)
                     ->where('status', 'approved')
                     ->whereRaw("round((6371 * acos( cos( radians('$latitude') ) * cos( radians(latitude) ) * cos( radians(longitude) - radians('$longitude') ) + sin( radians('$latitude') ) * sin( radians(latitude) ) ) ),3) <= $distance")
                     ->get();
             } else {
                 $ActiveProviders = ProviderService::where('status', 'active')
                     ->get()->pluck('provider_id');
-                $Providers = Provider::with('service')->whereIn('id', $ActiveProviders)
+                $providers = Provider::with('service')->whereIn('id', $ActiveProviders)
                     ->where('status', 'approved')
                     ->whereRaw("round((6371 * acos( cos( radians('$latitude') ) * cos( radians(latitude) ) * cos( radians(longitude) - radians('$longitude') ) + sin( radians('$latitude') ) * sin( radians(latitude) ) ) ),3) <= $distance")
                     ->get();
             }
-            return $Providers;
+            return $providers;
 
         } catch (Exception $e) {
             if ($request->ajax()) {
@@ -1471,7 +1475,7 @@ class UserApiController extends Controller
                 'user' => $user
             ]);
         } catch (Exception $e) {
-            //Log::info($e->getMessage());
+           // Log::info($e->getMessage());
             return response()->json(['error' => trans('api.something_went_wrong')], 500);
         }
     }
@@ -1515,7 +1519,7 @@ class UserApiController extends Controller
         try {
             if ($request->ajax()) {
                 return response()->json([
-                    'contact_number' => config('constants.contact_number', ''),
+                    'contact_npromocodesumber' => config('constants.contact_number', ''),
                     'contact_email' => config('constants.contact_email', '')
                 ]);
             }
@@ -1648,7 +1652,7 @@ class UserApiController extends Controller
         }
     }
 
-    public function CheckVersion(Request $request)
+    public function checkVersion(Request $request)
     {
         $this->validate($request, [
             'sender' => 'in:user,provider',
@@ -1661,19 +1665,19 @@ class UserApiController extends Controller
             $version = $request->version;
             if ($sender == 'user') {
                 if ($device_type == 'ios') {
-                    $curversion = config('constants.version_ios_user');
-                    if ($curversion == $version) {
+                    $current_version = config('constants.version_ios_user');
+                    if ($current_version == $version) {
                         return response()->json(['force_update' => false]);
-                    } elseif ($curversion > $version) {
+                    } elseif ($current_version > $version) {
                         return response()->json(['force_update' => true, 'url' => config('constants.store_link_ios_user')]);
                     } else {
                         return response()->json(['force_update' => false]);
                     }
                 } else {
-                    $curversion = config('constants.version_android_user');
-                    if ($curversion == $version) {
+                    $current_version = config('constants.version_android_user');
+                    if ($current_version == $version) {
                         return response()->json(['force_update' => false]);
-                    } elseif ($curversion > $version) {
+                    } elseif ($current_version > $version) {
                         return response()->json(['force_update' => true, 'url' => config('constants.store_link_android_user')]);
                     } else {
                         return response()->json(['force_update' => false]);
@@ -1681,19 +1685,19 @@ class UserApiController extends Controller
                 }
             } else if ($sender == 'provider') {
                 if ($device_type == 'ios') {
-                    $curversion = config('constants.version_ios_provider');
-                    if ($curversion == $version) {
+                    $current_version = config('constants.version_ios_provider');
+                    if ($current_version == $version) {
                         return response()->json(['force_update' => false]);
-                    } elseif ($curversion > $version) {
+                    } elseif ($current_version > $version) {
                         return response()->json(['force_update' => true, 'url' => config('constants.store_link_ios_provider')]);
                     } else {
                         return response()->json(['force_update' => false]);
                     }
                 } else {
-                    $curversion = config('constants.version_android_provider');
-                    if ($curversion == $version) {
+                    $current_version = config('constants.version_android_provider');
+                    if ($current_version == $version) {
                         return response()->json(['force_update' => false]);
-                    } elseif ($curversion > $version) {
+                    } elseif ($current_version > $version) {
                         return response()->json(['force_update' => true, 'url' => config('constants.store_link_android_provider')]);
                     } else {
                         return response()->json(['force_update' => false]);
@@ -1713,8 +1717,7 @@ class UserApiController extends Controller
 
     public function reasons(Request $request)
     {
-        $reason = Reason::where('type', 'USER')->where('status', 1)->get();
-        return $reason;
+        return Reason::where('type', 'USER')->where('status', 1)->get();
     }
 
     public function payment_log(Request $request)
@@ -1728,14 +1731,14 @@ class UserApiController extends Controller
     public function verifyCredentials(Request $request)
     {
         if ($request->has("mobile")) {
-            $Provider = User::where([['country_code', $request->country_code], ['mobile', $request->mobile]])->where('user_type', 'NORMAL')->first();
-            if ($Provider != null) {
+            $provider = User::where([['country_code', $request->country_code], ['mobile', $request->mobile]])->where('user_type', 'NORMAL')->first();
+            if ($provider != null) {
                 return response()->json(['message' => trans('api.mobile_exist')], 422);
             }
         }
         if ($request->has("email")) {
-            $Provider = User::where('email', $request->input("email"))->first();
-            if ($Provider != null) {
+            $provider = User::where('email', $request->input("email"))->first();
+            if ($provider != null) {
                 return response()->json(['message' => trans('api.email_exist')], 422);
             }
         }
@@ -1782,14 +1785,15 @@ class UserApiController extends Controller
     public function banners()
     {
         if ($serviceList = Banners::all()) {
-            //$addon = Addon::all();
-            //Log::alert('message'.response()->json(array(
-            //    'serviceList'=> $serviceList,'category'=> $category,'addon'=> $addon,)));
-            //return response()->json(array(['serviceList'=> $serviceList,'category'=> $category,'addon'=> $addon]));
-            return $serviceList;
+             return $serviceList;
         } else {
             return response()->json(['error' => trans('api.services_not_found')], 500);
         }
+
+    }
+
+
+    public function checkOTP(CheckOTPRequest $request){
 
     }
 }

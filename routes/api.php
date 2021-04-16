@@ -19,11 +19,14 @@ Route::post('/oauth/token' , 'UserApiController@login');
 Route::post('/signup' , 'UserApiController@signup');
 Route::post('/logout' , 'UserApiController@logout');
 Route::get('/checkapi' , 'UserApiController@checkapi');
-Route::post('/checkversion' , 'UserApiController@CheckVersion');
+Route::post('/checkversion' , 'UserApiController@checkVersion');
 
 Route::post('/auth/facebook', 		'Auth\SocialLoginController@facebookViaAPI');
 Route::post('/auth/google', 		'Auth\SocialLoginController@googleViaAPI');
 Route::post('/forgot/password',     'UserApiController@forgotPassword');
+
+Route::post('/check-otp',     'UserApiController@checkOTP');
+
 Route::post('/reset/password',      'UserApiController@resetPassword');
 Route::get('/estimated/fare-without-auth' , 'UserApiController@estimatedFare');
 
@@ -80,7 +83,7 @@ Route::group(['middleware' => ['auth:api']], function () {
 	Route::post('/promocode/add' , 	'UserApiController@add_promocode');
 	// card payment
     Route::resource('card', 		'Resource\CardResource');
-    // card payment
+    // Location
     Route::resource('location', 'Resource\FavouriteLocationResource');
     // passbook
 	Route::get('/wallet/passbook' , 'UserApiController@wallet_passbook');

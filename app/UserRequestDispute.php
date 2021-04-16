@@ -34,16 +34,16 @@ class UserRequestDispute extends Model
 
     public function request()
     {
-        return $this->belongsTo('App\UserRequests');
+        return $this->belongsTo(UserRequests::class);
     }
 
     public function user()
     {
-        return $this->belongsTo('App\User');
+        return $this->belongsTo(User::class);
     }
 
     public function provider()
     {
-        return $this->belongsTo('App\Provider');
+        return $this->belongsTo(Provider::class);
     }
 }

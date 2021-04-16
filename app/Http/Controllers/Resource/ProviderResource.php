@@ -200,7 +200,7 @@ class ProviderResource extends Controller
             'last_name' => 'required|max:255',
             'country_code' => 'required|max:25',
             'email' => 'required|unique:providers,email|email|max:255',
-            'mobile' => 'digits_between:6,13',
+            'mobile' => 'digits_between:6,13|unique:providers,mobile',
             'avatar' => 'mimes:jpeg,jpg,bmp,png|max:5242880',
             'password' => 'required|min:6|confirmed',
         ]);
@@ -608,7 +608,7 @@ class ProviderResource extends Controller
             $revenue = UserRequestPayment::whereHas('request', function ($query) use ($id) {
                 $query->where('provider_id', $id);
             })->select(\DB::raw(
-                'SUM(fixed) + distance) as overall, SUM(commision) as commission'
+                'SUM(fixed) + distance) as overall, SUM(commission) as commission'
             ))->get();
 
 
