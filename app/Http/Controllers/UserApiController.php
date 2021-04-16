@@ -215,55 +215,63 @@ class UserApiController extends Controller
                 }');
         // $file=QrCode::format('png')->size(200)->margin(20)->phoneNumber($request->country_code.$request->mobile);
         $fileName = Helper::upload_qrCode($request->mobile, $file);
+
+
+        $otp = mt_rand(100000, 999999);
+
+
+
         if ($currentUser == null) {
-            $User = $request->all();
+            $user = $request->all();
             if ($request->has('gender')) {
                 if ($request->gender == 'MALE') {
-                    $User['gender'] = 'MALE';
+                    $user['gender'] = 'MALE';
                 } else {
-                    $User['gender'] = 'FEMALE';
+                    $user['gender'] = 'FEMALE';
                 }
             }
-            $User['payment_mode'] = 'CASH';
-            $User['password'] = bcrypt($request->password);
-            $User['referral_unique_id'] = $referral_unique_id;
-            $User['qrcode_url'] = $fileName;
-            $User = User::create($User);
+            $user['payment_mode'] = 'CASH';
+            $user['password'] = bcrypt($request->password);
+            $user['referral_unique_id'] = $referral_unique_id;
+            $user['qrcode_url'] = $fileName;
+            $user = User::create($user);
 
-            $User = Auth::loginUsingId($User->id);
-            $UserToken = $User->createToken('AutoLogin');
-            $User['access_token'] = $UserToken->accessToken;
-            $User['currency'] = config('constants.currency');
-            $User['sos'] = config('constants.sos_number', '911');
-            $User['app_contact'] = config('constants.app_contact', '5777');
-            $User['measurement'] = config('constants.distance', 'Kms');
+            $user = Auth::loginUsingId($user->id);
+            $userToken = $user->createToken('AutoLogin');
+            $user['access_token'] = $userToken->accessToken;
+            $user['currency'] = config('constants.currency');
+            $user['sos'] = config('constants.sos_number', '911');
+            $user['app_contact'] = config('constants.app_contact', '5777');
+            $user['measurement'] = config('constants.distance', 'Kms');
+            $user['opt'] = $otp;
         } else {
-            $User = $currentUser;
-            $User->first_name = $request->first_name;
-            $User->last_name = $request->last_name;
-            $User->email = $request->email;
-            $User->country_code = $request->country_code;
-            $User->mobile = $request->mobile;
-            $User->password = bcrypt($request->password);
-            $User->login_by = 'manual';
-            $User->payment_mode = 'CASH';
-            $User->user_type = 'NORMAL';
-            $User->referral_unique_id = $referral_unique_id;
-            $User->qrcode_url = $fileName;
-            $User->save();
+            $user = $currentUser;
+            $user->first_name = $request->first_name;
+            $user->last_name = $request->last_name;
+            $user->email = $request->email;
+            $user->country_code = $request->country_code;
+            $user->mobile = $request->mobile;
+            $user->password = bcrypt($request->password);
+            $user->login_by = 'manual';
+            $user->payment_mode = 'CASH';
+            $user->user_type = 'NORMAL';
+            $user->referral_unique_id = $referral_unique_id;
+            $user->qrcode_url = $fileName;
+            $user->otp = $otp;
+            $user->save();
         }
         // Sends welcome email to the user
         // if (config('constants.send_email', 0) == 1) {
-        // Helper::site_registermail($User);
+        // Helper::site_registermail($user);
         //        }
         //check user referrals
         if (config('constants.referral', 0) == 1) {
             if ($request->referral_code != null) {
                 //call referral function
-                (new ReferralResource)->create_referral($request->referral_code, $User);
+                (new ReferralResource)->create_referral($request->referral_code, $user);
             }
         }
-        return $User;
+        return $user;
     }
 
     /**
@@ -297,10 +305,10 @@ class UserApiController extends Controller
             'password' => 'required|confirmed|min:6',
             'old_password' => 'required',
         ]);
-        $User = Auth::user();
-        if (Hash::check($request->old_password, $User->password)) {
-            $User->password = bcrypt($request->password);
-            $User->save();
+        $user = Auth::user();
+        if (Hash::check($request->old_password, $user->password)) {
+            $user->password = bcrypt($request->password);
+            $user->save();
             if ($request->ajax()) {
                 return response()->json(['message' => trans('api.user.password_updated')]);
             } else {
@@ -662,67 +670,67 @@ class UserApiController extends Controller
             $json = curl($details);
             $details = json_decode($json, TRUE);
             $route_key = (count($details['routes']) > 0) ? $details['routes'][0]['overview_polyline']['points'] : '';
-            $UserRequest = new UserRequests;
-            $UserRequest->booking_id = Helper::generate_booking_id();
+            $userRequest = new UserRequests;
+            $userRequest->booking_id = Helper::generate_booking_id();
             if ($request->has('braintree_nonce') && $request->braintree_nonce != null) {
-                $UserRequest->braintree_nonce = $request->braintree_nonce;
+                $userRequest->braintree_nonce = $request->braintree_nonce;
             }
-            $UserRequest->user_id = Auth::user()->id;
+            $userRequest->user_id = Auth::user()->id;
             if ((config('constants.manual_request', 0) == 0) && (config('constants.broadcast_request', 0) == 0)) {
-                $UserRequest->current_provider_id = $providers[0]->id;
+                $userRequest->current_provider_id = $providers[0]->id;
             } else {
-                $UserRequest->current_provider_id = 0;
+                $userRequest->current_provider_id = 0;
             }
             //Calculates estimated fare value
             try {
                 $response = new ServiceTypes();
                 $responsedata = $response->calculateFare($request->all(), 1);
-                $UserRequest->estimated_fare = $responsedata['data']['estimated_fare'];
-                $UserRequest->estimated_fare = 0;//$responsedata['data']['estimated_fare'];
+                $userRequest->estimated_fare = $responsedata['data']['estimated_fare'];
+                $userRequest->estimated_fare = 0;//$responsedata['data']['estimated_fare'];
             } catch (Exception $e) {
                 return response()->json(['error' => $e->getMessage()], 500);
             }
-            $UserRequest->service_type_id = $request->service_type;
-            //$UserRequest->rental_hours = $request->rental_hours;
-            $UserRequest->payment_mode = $request->payment_mode;
-            $UserRequest->promocode_id = $request->promocode_id ?: 0;
-            $UserRequest->status = 'SEARCHING';
-            $UserRequest->s_address = $request->s_address ?: "";
-            $UserRequest->d_address = $request->d_address ?: "";
-            $UserRequest->s_latitude = $request->s_latitude;
-            $UserRequest->s_longitude = $request->s_longitude;
-            $UserRequest->d_latitude = $request->d_latitude ? $request->d_latitude : $request->s_latitude;
-            $UserRequest->d_longitude = $request->d_longitude ? $request->d_longitude : $request->s_longitude;
+            $userRequest->service_type_id = $request->service_type;
+            //$userRequest->rental_hours = $request->rental_hours;
+            $userRequest->payment_mode = $request->payment_mode;
+            $userRequest->promocode_id = $request->promocode_id ?: 0;
+            $userRequest->status = 'SEARCHING';
+            $userRequest->s_address = $request->s_address ?: "";
+            $userRequest->d_address = $request->d_address ?: "";
+            $userRequest->s_latitude = $request->s_latitude;
+            $userRequest->s_longitude = $request->s_longitude;
+            $userRequest->d_latitude = $request->d_latitude ? $request->d_latitude : $request->s_latitude;
+            $userRequest->d_longitude = $request->d_longitude ? $request->d_longitude : $request->s_longitude;
             if ($request->d_latitude == null && $request->d_longitude == null) {
-                $UserRequest->is_drop_location = 0;
+                $userRequest->is_drop_location = 0;
             }
-            $UserRequest->destination_log = json_encode([['latitude' => $UserRequest->d_latitude, 'longitude' => $request->d_longitude, 'address' => $request->d_address]]);
-            $UserRequest->distance = 0;//$request->distance;
-            $UserRequest->unit = config('constants.distance', 'Kms');
+            $userRequest->destination_log = json_encode([['latitude' => $userRequest->d_latitude, 'longitude' => $request->d_longitude, 'address' => $request->d_address]]);
+            $userRequest->distance = 0;//$request->distance;
+            $userRequest->unit = config('constants.distance', 'Kms');
             if (Auth::user()->wallet_balance > 0) {
-                $UserRequest->use_wallet = $request->use_wallet ?: 0;
+                $userRequest->use_wallet = $request->use_wallet ?: 0;
             }
             if (config('constants.track_distance', 0) == 1) {
-                $UserRequest->is_track = "YES";
+                $userRequest->is_track = "YES";
             }
-            $UserRequest->otp = mt_rand(1000, 9999);
-            $UserRequest->assigned_at = Carbon::now();
-            $UserRequest->route_key = $route_key;
+            $userRequest->otp = mt_rand(1000, 9999);
+            $userRequest->assigned_at = Carbon::now();
+            $userRequest->route_key = $route_key;
             if ($providers->count() <= config('constants.surge_trigger') && $providers->count() > 0) {
-                $UserRequest->surge = 1;
+                $userRequest->surge = 1;
             }
             if ($request->has('schedule_date') && $request->has('schedule_time')) {
-                $UserRequest->status = 'SCHEDULED';
-                $UserRequest->schedule_at = date("Y-m-d H:i:s", strtotime("$request->schedule_date $request->schedule_time"));
-                $UserRequest->is_scheduled = 'YES';
+                $userRequest->status = 'SCHEDULED';
+                $userRequest->schedule_at = date("Y-m-d H:i:s", strtotime("$request->schedule_date $request->schedule_time"));
+                $userRequest->is_scheduled = 'YES';
             }
-            if ($UserRequest->status != 'SCHEDULED') {
+            if ($userRequest->status != 'SCHEDULED') {
                 if ((config('constants.manual_request', 0) == 0) && (config('constants.broadcast_request', 0) == 0)) {
-                    Log::info('New Request id : ' . $UserRequest->id . ' Assigned to provider : ' . $UserRequest->current_provider_id);
+                    Log::info('New Request id : ' . $userRequest->id . ' Assigned to provider : ' . $userRequest->current_provider_id);
                     (new SendPushNotification)->IncomingRequest($providers[0]->id);
                 }
             }
-            $UserRequest->save();
+            $userRequest->save();
             if ((config('constants.manual_request', 0) == 1)) {
                 $admins = Admin::select('id')->get();
                 foreach ($admins as $admin_id) {
@@ -736,7 +744,7 @@ class UserApiController extends Controller
                 Card::where('user_id', Auth::user()->id)->update(['is_default' => 0]);
                 Card::where('card_id', $request->card_id)->update(['is_default' => 1]);
             }
-            if ($UserRequest->status != 'SCHEDULED') {
+            if ($userRequest->status != 'SCHEDULED') {
                 if (config('constants.manual_request', 0) == 0) {
                     foreach ($providers as $key => $provider) {
                         if (config('constants.broadcast_request', 0) == 1) {
@@ -745,7 +753,7 @@ class UserApiController extends Controller
                         $Filter = new RequestFilter;
                         // Send push notifications to the first provider
                         // incoming request push to provider
-                        $Filter->request_id = $UserRequest->id;
+                        $Filter->request_id = $userRequest->id;
                         $Filter->provider_id = $provider->id;
                         $Filter->save();
                     }
@@ -753,12 +761,12 @@ class UserApiController extends Controller
             }
             if ($request->ajax()) {
                 return response()->json([
-                    'message' => ($UserRequest->status == 'SCHEDULED') ? 'Request schedule created!' : 'New Request created!',
-                    'request_id' => $UserRequest->id,
-                    'current_provider' => $UserRequest->current_provider_id,
+                    'message' => ($userRequest->status == 'SCHEDULED') ? 'Request schedule created!' : 'New Request created!',
+                    'request_id' => $userRequest->id,
+                    'current_provider' => $userRequest->current_provider_id,
                 ]);
             } else {
-                if ($UserRequest->status == 'SCHEDULED') {
+                if ($userRequest->status == 'SCHEDULED') {
                     $request->session()->flash('flash_success', 'Your Request is scheduled!');
                 }
                 return redirect('dashboard');
@@ -783,36 +791,36 @@ class UserApiController extends Controller
             'request_id' => 'required|numeric|exists:user_requests,id,user_id,' . Auth::user()->id,
         ]);
         try {
-            $UserRequest = UserRequests::findOrFail($request->request_id);
-            if ($UserRequest->status == 'CANCELLED') {
+            $userRequest = UserRequests::findOrFail($request->request_id);
+            if ($userRequest->status == 'CANCELLED') {
                 if ($request->ajax()) {
                     return response()->json(['error' => trans('api.ride.already_cancelled')], 422);
                 } else {
                     return back()->with('flash_error', trans('api.ride.already_cancelled'));
                 }
             }
-            if (in_array($UserRequest->status, ['SEARCHING', 'STARTED', 'ARRIVED', 'SCHEDULED'])) {
-                if ($UserRequest->status != 'SEARCHING') {
+            if (in_array($userRequest->status, ['SEARCHING', 'STARTED', 'ARRIVED', 'SCHEDULED'])) {
+                if ($userRequest->status != 'SEARCHING') {
                     $this->validate($request, [
                         'cancel_reason' => 'max:255',
                     ]);
                 }
-                $UserRequest->status = 'CANCELLED';
+                $userRequest->status = 'CANCELLED';
                 if ($request->cancel_reason == 'ot')
-                    $UserRequest->cancel_reason = $request->cancel_reason_opt;
+                    $userRequest->cancel_reason = $request->cancel_reason_opt;
                 else
-                    $UserRequest->cancel_reason = $request->cancel_reason;
+                    $userRequest->cancel_reason = $request->cancel_reason;
 
-                $UserRequest->cancelled_by = 'USER';
-                $UserRequest->save();
-                RequestFilter::where('request_id', $UserRequest->id)->delete();
-                if ($UserRequest->status != 'SCHEDULED') {
-                    if ($UserRequest->provider_id != 0) {
-                        ProviderService::where('provider_id', $UserRequest->provider_id)->update(['status' => 'active']);
+                $userRequest->cancelled_by = 'USER';
+                $userRequest->save();
+                RequestFilter::where('request_id', $userRequest->id)->delete();
+                if ($userRequest->status != 'SCHEDULED') {
+                    if ($userRequest->provider_id != 0) {
+                        ProviderService::where('provider_id', $userRequest->provider_id)->update(['status' => 'active']);
                     }
                 }
                 // Send Push Notification to User
-                (new SendPushNotification)->UserCancellRide($UserRequest);
+                (new SendPushNotification)->UserCancellRide($userRequest);
                 if ($request->ajax()) {
                     return response()->json(['message' => trans('api.ride.ride_cancelled')]);
                 } else {
@@ -849,26 +857,26 @@ class UserApiController extends Controller
         ]);
 
         try {
-            $UserRequest = UserRequests::findOrFail($request->request_id);
-            $details = "https://maps.googleapis.com/maps/api/directions/json?origin=" . $UserRequest->s_latitude . "," . $UserRequest->s_longitude . "&destination=" . $request->latitude . "," . $request->longitude . "&mode=driving&key=" . config('constants.map_key');
+            $userRequest = UserRequests::findOrFail($request->request_id);
+            $details = "https://maps.googleapis.com/maps/api/directions/json?origin=" . $userRequest->s_latitude . "," . $userRequest->s_longitude . "&destination=" . $request->latitude . "," . $request->longitude . "&mode=driving&key=" . config('constants.map_key');
             $json = curl($details);
             $details = json_decode($json, TRUE);
             $route_key = (count($details['routes']) > 0) ? $details['routes'][0]['overview_polyline']['points'] : '';
-            $destination_log = json_decode($UserRequest->destination_log);
+            $destination_log = json_decode($userRequest->destination_log);
             $destination_log[] = ['latitude' => $request->latitude, 'longitude' => $request->longitude, 'address' => $request->address];
             //New distance arrow
-            $locationarr = ["s_latitude" => $UserRequest->s_latitude, "s_longitude" => $UserRequest->s_longitude, "d_latitude" => $request->latitude, "d_longitude" => $request->longitude];
-            $UserRequest->distance = $this->getLocationDistance($locationarr);
-            $UserRequest->d_latitude = $request->latitude;
-            $UserRequest->d_longitude = $request->longitude;
-            $UserRequest->d_address = $request->address;
-            $UserRequest->route_key = $route_key;
-            $UserRequest->destination_log = json_encode($destination_log);
-            $UserRequest->save();
+            $locationarr = ["s_latitude" => $userRequest->s_latitude, "s_longitude" => $userRequest->s_longitude, "d_latitude" => $request->latitude, "d_longitude" => $request->longitude];
+            $userRequest->distance = $this->getLocationDistance($locationarr);
+            $userRequest->d_latitude = $request->latitude;
+            $userRequest->d_longitude = $request->longitude;
+            $userRequest->d_address = $request->address;
+            $userRequest->route_key = $route_key;
+            $userRequest->destination_log = json_encode($destination_log);
+            $userRequest->save();
             $message = trans('api.destination_changed');
-            (new SendPushNotification)->sendPushToProvider($UserRequest->provider_id, $message);
-            (new SendPushNotification)->sendPushToUser($UserRequest->user_id, $message);
-            return $UserRequest;
+            (new SendPushNotification)->sendPushToProvider($userRequest->provider_id, $message);
+            (new SendPushNotification)->sendPushToUser($userRequest->user_id, $message);
+            return $userRequest;
         } catch (ModelNotFoundException $e) {
             if ($request->ajax()) {
                 return response()->json(['error' => trans('api.something_went_wrong')], 500);
@@ -916,42 +924,42 @@ class UserApiController extends Controller
     {
         try {
             $check_status = ['CANCELLED', 'SCHEDULED'];
-            $UserRequests = UserRequests::UserRequestStatusCheck(Auth::user()->id, $check_status)
+            $userRequests = UserRequests::UserRequestStatusCheck(Auth::user()->id, $check_status)
                 ->get()
                 ->toArray();
             $search_status = ['SEARCHING', 'SCHEDULED'];
-            $UserRequestsFilter = UserRequests::UserRequestAssignProvider(Auth::user()->id, $search_status)->get();
-            //Log::info($UserRequestsFilter);
-            if (!empty($UserRequests)) {
-                $UserRequests[0]['ride_otp'] = (int)config('constants.ride_otp', 0);
-                $UserRequests[0]['ride_toll'] = (int)config('constants.ride_toll', 0);
-                $UserRequests[0]['reasons'] = Reason::where('type', 'USER')->get();
+            $userRequestsFilter = UserRequests::UserRequestAssignProvider(Auth::user()->id, $search_status)->get();
+            //Log::info($userRequestsFilter);
+            if (!empty($userRequests)) {
+                $userRequests[0]['ride_otp'] = (int)config('constants.ride_otp', 0);
+                $userRequests[0]['ride_toll'] = (int)config('constants.ride_toll', 0);
+                $userRequests[0]['reasons'] = Reason::where('type', 'USER')->get();
             }
             $Timeout = config('constants.provider_select_timeout', 180);
             $type = config('constants.broadcast_request', 0);
-            if (!empty($UserRequestsFilter)) {
-                for ($i = 0; $i < count($UserRequestsFilter); $i++) {
+            if (!empty($userRequestsFilter)) {
+                for ($i = 0; $i < count($userRequestsFilter); $i++) {
                     if ($type == 1) {
-                        $ExpiredTime = $Timeout - (time() - strtotime($UserRequestsFilter[$i]->created_at));
-                        if ($UserRequestsFilter[$i]->status == 'SEARCHING' && $ExpiredTime < 0) {
-                            UserRequests::where('id', $UserRequestsFilter[$i]->id)->update(['status' => 'CANCELLED']);
+                        $ExpiredTime = $Timeout - (time() - strtotime($userRequestsFilter[$i]->created_at));
+                        if ($userRequestsFilter[$i]->status == 'SEARCHING' && $ExpiredTime < 0) {
+                            UserRequests::where('id', $userRequestsFilter[$i]->id)->update(['status' => 'CANCELLED']);
                             // No longer need request specific rows from RequestMeta
-                            RequestFilter::where('request_id', $UserRequestsFilter[$i]->id)->delete();
-                        } else if ($UserRequestsFilter[$i]->status == 'SEARCHING' && $ExpiredTime > 0) {
+                            RequestFilter::where('request_id', $userRequestsFilter[$i]->id)->delete();
+                        } else if ($userRequestsFilter[$i]->status == 'SEARCHING' && $ExpiredTime > 0) {
                             break;
                         }
                     } else {
-                        $ExpiredTime = $Timeout - (time() - strtotime($UserRequestsFilter[$i]->assigned_at));
-                        if ($UserRequestsFilter[$i]->status == 'SEARCHING' && $ExpiredTime < 0) {
+                        $ExpiredTime = $Timeout - (time() - strtotime($userRequestsFilter[$i]->assigned_at));
+                        if ($userRequestsFilter[$i]->status == 'SEARCHING' && $ExpiredTime < 0) {
                             $providertrip = new TripController();
-                            $providertrip->assign_next_provider($UserRequestsFilter[$i]->id);
-                        } else if ($UserRequestsFilter[$i]->status == 'SEARCHING' && $ExpiredTime > 0) {
+                            $providertrip->assign_next_provider($userRequestsFilter[$i]->id);
+                        } else if ($userRequestsFilter[$i]->status == 'SEARCHING' && $ExpiredTime > 0) {
                             break;
                         }
                     }
                 }
             }
-            if (empty($UserRequests)) {
+            if (empty($userRequests)) {
                 $cancelled_request = UserRequests::where('user_requests.user_id', Auth::user()->id)
                     ->where('user_requests.user_rated', 0)
                     ->where('user_requests.status', ['CANCELLED'])->orderby('updated_at', 'desc')
@@ -961,7 +969,7 @@ class UserApiController extends Controller
                     \Session::flash('flash_error', $cancelled_request->cancel_reason);
                 }
             }
-            return response()->json(['data' => $UserRequests,
+            return response()->json(['data' => $userRequests,
                 'sos' => config('constants.sos_number', '190'),
                 'cash' => (int)config('constants.cash'),
 
@@ -1008,11 +1016,11 @@ class UserApiController extends Controller
             'rating' => 'required|integer|in:1,2,3,4,5',
             'comment' => 'max:255',
         ]);
-        $UserRequests = UserRequests::where('id', $request->request_id)
+        $userRequests = UserRequests::where('id', $request->request_id)
             ->where('status', 'COMPLETED')
             ->where('paid', 0)
             ->first();
-        if ($UserRequests) {
+        if ($userRequests) {
             if ($request->ajax()) {
                 return response()->json(['error' => trans('api.user.not_paid')], 422);
             } else {
@@ -1020,25 +1028,25 @@ class UserApiController extends Controller
             }
         }
         try {
-            $UserRequest = UserRequests::findOrFail($request->request_id);
-            if ($UserRequest->rating == null) {
+            $userRequest = UserRequests::findOrFail($request->request_id);
+            if ($userRequest->rating == null) {
                 UserRequestRating::create([
-                    'provider_id' => $UserRequest->provider_id,
-                    'user_id' => $UserRequest->user_id,
-                    'request_id' => $UserRequest->id,
+                    'provider_id' => $userRequest->provider_id,
+                    'user_id' => $userRequest->user_id,
+                    'request_id' => $userRequest->id,
                     'user_rating' => $request->rating,
                     'user_comment' => $request->comment,
                 ]);
             } else {
-                $UserRequest->rating->update([
+                $userRequest->rating->update([
                     'user_rating' => $request->rating,
                     'user_comment' => $request->comment,
                 ]);
             }
-            $UserRequest->user_rated = 1;
-            $UserRequest->save();
-            $average = UserRequestRating::where('provider_id', $UserRequest->provider_id)->avg('user_rating');
-            Provider::where('id', $UserRequest->provider_id)->update(['rating' => $average]);
+            $userRequest->user_rated = 1;
+            $userRequest->save();
+            $average = UserRequestRating::where('provider_id', $userRequest->provider_id)->avg('user_rating');
+            Provider::where('id', $userRequest->provider_id)->update(['rating' => $average]);
             // Send Push Notification to Provider
             if ($request->ajax()) {
                 return response()->json(['message' => trans('api.ride.provider_rated')]);
@@ -1071,22 +1079,22 @@ class UserApiController extends Controller
             'card_id' => ['required_if:payment_mode,CARD', 'exists:cards,card_id,user_id,' . Auth::user()->id],
         ]);
         try {
-            $UserRequest = UserRequests::findOrFail($request->request_id);
+            $userRequest = UserRequests::findOrFail($request->request_id);
             if (!empty($request->latitude) && !empty($request->longitude)) {
-                $UserRequest->d_latitude = $request->latitude ?: $UserRequest->d_latitude;
-                $UserRequest->d_longitude = $request->longitude ?: $UserRequest->d_longitude;
-                $UserRequest->d_address = $request->address ?: $UserRequest->d_address;
+                $userRequest->d_latitude = $request->latitude ?: $userRequest->d_latitude;
+                $userRequest->d_longitude = $request->longitude ?: $userRequest->d_longitude;
+                $userRequest->d_address = $request->address ?: $userRequest->d_address;
             }
             if ($request->has('braintree_nonce') && $request->braintree_nonce != null) {
-                $UserRequest->braintree_nonce = $request->braintree_nonce;
+                $userRequest->braintree_nonce = $request->braintree_nonce;
             }
             if (!empty($request->payment_mode)) {
-                $UserRequest->payment_mode = $request->payment_mode;
-//                if ($request->payment_mode == 'CARD' && $UserRequest->status == 'DROPPED') {
-//                    $UserRequest->status = 'COMPLETED';
+                $userRequest->payment_mode = $request->payment_mode;
+//                if ($request->payment_mode == 'CARD' && $userRequest->status == 'DROPPED') {
+//                    $userRequest->status = 'COMPLETED';
 //                }
             }
-            $UserRequest->save();
+            $userRequest->save();
             if ($request->has('card_id')) {
                 Card::where('user_id', Auth::user()->id)->update(['is_default' => 0]);
                 Card::where('card_id', $request->card_id)->update(['is_default' => 1]);
@@ -1114,11 +1122,11 @@ class UserApiController extends Controller
     public function trips()
     {
         try {
-            $UserRequests = UserRequests::UserTrips(Auth::user()->id)->get();
-            if (!empty($UserRequests)) {
+            $userRequests = UserRequests::UserTrips(Auth::user()->id)->get();
+            if (!empty($userRequests)) {
                 $map_icon = asset('asset/img/marker-start.png');
-                foreach ($UserRequests as $key => $value) {
-                    $UserRequests[$key]->static_map = "https://maps.googleapis.com/maps/api/staticmap?" .
+                foreach ($userRequests as $key => $value) {
+                    $userRequests[$key]->static_map = "https://maps.googleapis.com/maps/api/staticmap?" .
                         "autoscale=1" .
                         "&size=320x130" .
                         "&maptype=terrian" .
@@ -1130,7 +1138,7 @@ class UserApiController extends Controller
                         "&key=" . config('constants.map_key');
                 }
             }
-            return $UserRequests;
+            return $userRequests;
         } catch (Exception $e) {
             return response()->json(['error' => trans('api.something_went_wrong')]);
         }
@@ -1172,11 +1180,11 @@ class UserApiController extends Controller
     {
         $this->validate($request, ['request_id' => 'required|integer|exists:user_requests,id']);
         try {
-            $UserRequests = UserRequests::UserTripDetails(Auth::user()->id, $request->request_id)->get();
-            if (!empty($UserRequests)) {
+            $userRequests = UserRequests::UserTripDetails(Auth::user()->id, $request->request_id)->get();
+            if (!empty($userRequests)) {
                 $map_icon = asset('asset/img/marker-start.png');
-                foreach ($UserRequests as $key => $value) {
-                    $UserRequests[$key]->static_map = "https://maps.googleapis.com/maps/api/staticmap?" .
+                foreach ($userRequests as $key => $value) {
+                    $userRequests[$key]->static_map = "https://maps.googleapis.com/maps/api/staticmap?" .
                         "autoscale=1" .
                         "&size=320x130" .
                         "&maptype=terrian" .
@@ -1187,12 +1195,12 @@ class UserApiController extends Controller
                         "&path=color:0x191919|weight:3|enc:" . $value->route_key .
                         "&key=" . config('constants.map_key');
                 }
-                $UserRequests[0]->dispute = UserRequestDispute::where('dispute_type', 'user')->where('request_id', $request->request_id)->where('user_id', Auth::user()->id)->first();
-                $UserRequests[0]->lostitem = UserRequestLostItem::where('request_id', $request->request_id)->where('user_id', Auth::user()->id)->first();
-                $UserRequests[0]->contact_number = config('constants.contact_number', '');
-                $UserRequests[0]->contact_email = config('constants.contact_email', '');
+                $userRequests[0]->dispute = UserRequestDispute::where('dispute_type', 'user')->where('request_id', $request->request_id)->where('user_id', Auth::user()->id)->first();
+                $userRequests[0]->lostitem = UserRequestLostItem::where('request_id', $request->request_id)->where('user_id', Auth::user()->id)->first();
+                $userRequests[0]->contact_number = config('constants.contact_number', '');
+                $userRequests[0]->contact_email = config('constants.contact_email', '');
             }
-            return $UserRequests;
+            return $userRequests;
         } catch (Exception $e) {
             echo $e->getMessage();
             exit;
@@ -1353,11 +1361,11 @@ class UserApiController extends Controller
     {
         try {
 
-            $UserRequests = UserRequests::UserUpcomingTrips(Auth::user()->id)->get();
-            if (!empty($UserRequests)) {
+            $userRequests = UserRequests::UserUpcomingTrips(Auth::user()->id)->get();
+            if (!empty($userRequests)) {
                 $map_icon = asset('asset/img/marker-start.png');
-                foreach ($UserRequests as $key => $value) {
-                    $UserRequests[$key]->static_map = "https://maps.googleapis.com/maps/api/staticmap?" .
+                foreach ($userRequests as $key => $value) {
+                    $userRequests[$key]->static_map = "https://maps.googleapis.com/maps/api/staticmap?" .
                         "autoscale=1" .
                         "&size=320x130" .
                         "&maptype=terrian" .
@@ -1369,7 +1377,7 @@ class UserApiController extends Controller
                         "&key=" . config('constants.map_key');
                 }
             }
-            return $UserRequests;
+            return $userRequests;
         } catch (Exception $e) {
             return response()->json(['error' => trans('api.something_went_wrong')], 500);
         }
@@ -1386,11 +1394,11 @@ class UserApiController extends Controller
             'request_id' => 'required|integer|exists:user_requests,id',
         ]);
         try {
-            $UserRequests = UserRequests::UserUpcomingTripDetails(Auth::user()->id, $request->request_id)->get();
-            if (!empty($UserRequests)) {
+            $userRequests = UserRequests::UserUpcomingTripDetails(Auth::user()->id, $request->request_id)->get();
+            if (!empty($userRequests)) {
                 $map_icon = asset('asset/img/marker-start.png');
-                foreach ($UserRequests as $key => $value) {
-                    $UserRequests[$key]->static_map = "https://maps.googleapis.com/maps/api/staticmap?" .
+                foreach ($userRequests as $key => $value) {
+                    $userRequests[$key]->static_map = "https://maps.googleapis.com/maps/api/staticmap?" .
                         "autoscale=1" .
                         "&size=320x130" .
                         "&maptype=terrian" .
@@ -1402,7 +1410,7 @@ class UserApiController extends Controller
                         "&key=" . config('constants.map_key');
                 }
             }
-            return $UserRequests;
+            return $userRequests;
         } catch (Exception $e) {
             return response()->json(['error' => trans('api.something_went_wrong')], 500);
         }
@@ -1475,7 +1483,7 @@ class UserApiController extends Controller
                 'user' => $user
             ]);
         } catch (Exception $e) {
-           // Log::info($e->getMessage());
+            // Log::info($e->getMessage());
             return response()->json(['error' => trans('api.something_went_wrong')], 500);
         }
     }
@@ -1492,13 +1500,13 @@ class UserApiController extends Controller
             'id' => 'required|numeric|exists:users,id'
         ]);
         try {
-            $User = User::findOrFail($request->id);
-            // $UpdatedAt = date_create($User->updated_at);
+            $user = User::findOrFail($request->id);
+            // $UpdatedAt = date_create($user->updated_at);
             // $CurrentAt = date_create(date('Y-m-d H:i:s'));
             // $ExpiredAt = date_diff($UpdatedAt,$CurrentAt);
             // $ExpiredMin = $ExpiredAt->i;
-            $User->password = bcrypt($request->password);
-            $User->save();
+            $user->password = bcrypt($request->password);
+            $user->save();
             if ($request->ajax()) {
                 return response()->json(['message' => trans('api.user.password_updated')]);
             }
@@ -1785,7 +1793,7 @@ class UserApiController extends Controller
     public function banners()
     {
         if ($serviceList = Banners::all()) {
-             return $serviceList;
+            return $serviceList;
         } else {
             return response()->json(['error' => trans('api.services_not_found')], 500);
         }
@@ -1793,7 +1801,23 @@ class UserApiController extends Controller
     }
 
 
-    public function checkOTP(CheckOTPRequest $request){
+    public function checkOTP(CheckOTPRequest $request)
+    {
 
+        try {
+            $user = User::where('email', $request->email)->first();
+            if ($user) {
+                if ($user->otp == $request->otp_code) {
+                    return response()->json(['success' => 'Verified'], 200);
+                } else {
+                    return response()->json(['message' => 'Invalid OTP'], 422);
+                }
+            } else {
+                return response()->json(['error' => 'User Not Found'], 404);
+            }
+        } catch (Exception $e) {
+            // Log::info($e->getMessage());
+            return response()->json(['error' => trans('api.something_went_wrong')], 500);
+        }
     }
 }
